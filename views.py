@@ -2,6 +2,8 @@ from flask import render_template, request, redirect, session, flash, url_for, s
 from jogoteca import app, db
 from models import Jogos, Usuarios
 from helpers import recupera_imagem
+import time
+
 
 # Criando rota para index onde sera listado os jogos
 @app.route('/')
@@ -9,17 +11,14 @@ def index():
     lista = Jogos.query.order_by(Jogos.id)
     return render_template('lista.html', titulo='Jogos', jogos=lista)
 
-"""Criando rota para cadastro de novo jogo onde sera verificado se o usuario esta logado na sessao,
-caso esteja logado sera redirecionado para a pagina de criacao, se nao redirecionado para a pagina de login"""
+
 @app.route('/novo')
 def novo():
     if 'usuario_logado' not in session or session['usuario_logado'] is None:
         return redirect(url_for('login', proxima=url_for('novo')))
     return render_template('novo.html', titulo='Novo Jogo')
 
-"""Criando rota para comunicacao com o banco de dados utilizando o POST para adicionar o jogo no banco. Caso o jogo
-ja exista no banco, ele retorna uma mensagem informando que ja existe. E no final da funcao, estamos recebendo 
-a imagem de capa do jogo, onde o path de armazenamento esta configurado no arquivo config"""
+
 @app.route('/criar', methods=['POST', ])
 def criar():
     nome = request.form['nome']
@@ -37,16 +36,16 @@ def criar():
 
     arquivo = request.files['arquivo']
     upload_path = app.config['UPLOAD_PATH']
-    arquivo.save(f'{upload_path}/capa{novo_jogo.id}.jpg')
+    timestamp = time.time()
+    arquivo.save(f'{upload_path}/capa{novo_jogo.id}-{timestamp}.jpg')
 
     return redirect(url_for('index'))
 
-"""Criando rota editar informacoes de jogos ja cadastrados. Primeiro faz a checagem se o usuario esta logado,
-se estiver sera redirecionado para a pagina editar, se nao, redirecionado para a pagina de login"""
+
 @app.route('/editar/<int:id>')
 def editar(id):
     if 'usuario_logado' not in session or session['usuario_logado'] is None:
-        return redirect(url_for('login', proxima=url_for('editar')))
+        return redirect(url_for('login', proxima=url_for('editar', id=id)))
     jogo = Jogos.query.filter_by(id=id).first()
     capa_jogo = recupera_imagem(id)
     return render_template('editar.html', titulo='Editando Jogo', jogo=jogo, capa_jogo=capa_jogo)
@@ -65,13 +64,12 @@ def atualizar():
 # Trecho de codigo para alterar imagem de capa
     arquivo = request.files['arquivo']
     upload_path = app.config['UPLOAD_PATH']
-    arquivo.save(f'{upload_path}/capa{jogo.id}.jpg')
+    timestamp = time.time()
+    arquivo.save(f'{upload_path}/capa{jogo.id}-{timestamp}.jpg')
 
     return redirect(url_for('index'))
 
-"""Criando rota para deletar determinado jogo, primeiro checamos se o usuario esta logado, se nao
-redirecionamos para a pagina de login. Caso esteja logado, a rota se comunica com o banco, executando
-um delete"""
+
 @app.route('/deletar/<int:id>')
 def deletar(id):
     if 'usuario_logado' not in session or session['usuario_logado'] is None:
@@ -88,10 +86,7 @@ def login():
     proxima = request.args.get('proxima')
     return render_template('login.html', proxima=proxima)  # Criando variavel proxima
 
-"""Criando rota para autenticacao do usuario na aplicacao. O usuario entra com o login e senha e essas informacoes
-sao armazenadas na sessao do usuario. A variavel usuario armazena uma consulta realizada dentro do banco de dados
-com a seguinte query: usuarios.query.filter_by(nickname=request.form['usuario']).first(), que se comunica diretamente
-com o request html da pagina de login"""
+
 @app.route('/autenticar', methods=['POST', ])
 def autenticar():
     usuario = Usuarios.query.filter_by(nickname=request.form['usuario']).first()
