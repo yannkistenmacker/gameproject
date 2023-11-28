@@ -53,27 +53,35 @@ def editar(id):
     if 'usuario_logado' not in session or session['usuario_logado'] is None:
         return redirect(url_for('login', proxima=url_for('editar', id=id)))
     jogo = Jogos.query.filter_by(id=id).first()
+    form = FormularioJogo()
+    form.nome.data = jogo.nome
+    form.categoria.data = jogo.categoria
+    form.console.data = jogo.console
     capa_jogo = recupera_imagem(id)
-    return render_template('editar.html', titulo='Editando Jogo', jogo=jogo, capa_jogo=capa_jogo)
+    return render_template('editar.html', titulo='Editando Jogo', id=id, capa_jogo=capa_jogo, form=form)
 
 
 # Criando rota para alterar as informacoes no banco de dados a partir da rota editar
 @app.route('/atualizar', methods=['POST', ])
 def atualizar():
-    jogo = Jogos.query.filter_by(id=request.form['id']).first()
-    jogo.nome = request.form['nome']
-    jogo.categoria = request.form['categoria']
-    jogo.console = request.form['console']
+    form = FormularioJogo(request.form)
 
-    db.session.add(jogo)
-    db.session.commit()
+    if form.validate_on_submit():
 
-    # Trecho de codigo para alterar imagem de capa
-    arquivo = request.files['arquivo']
-    upload_path = app.config['UPLOAD_PATH']
-    timestamp = time.time()
-    deleta_arquivo(id)
-    arquivo.save(f'{upload_path}/capa{jogo.id}-{timestamp}.jpg')
+        jogo = Jogos.query.filter_by(id=request.form['id']).first()
+        jogo.nome = form.nome.data
+        jogo.categoria = form.categoria.data
+        jogo.console = form.console.data
+
+        db.session.add(jogo)
+        db.session.commit()
+
+        # Trecho de codigo para alterar imagem de capa
+        arquivo = request.files['arquivo']
+        upload_path = app.config['UPLOAD_PATH']
+        timestamp = time.time()
+        deleta_arquivo(id)
+        arquivo.save(f'{upload_path}/capa{jogo.id}-{timestamp}.jpg')
 
     return redirect(url_for('index'))
 
