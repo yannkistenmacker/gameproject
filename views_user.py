@@ -53,6 +53,11 @@ def cadastrar():
     nome = form.nome.data
     senha = generate_password_hash(form.senha.data)
 
+    name = Usuarios.query.filter_by(nickname=nickname).first()
+    if name:
+        flash('Usuario ja existe!')
+        return redirect('cadastro')
+
 
     if form.validate_on_submit():
         nickname = form.nickname.data
