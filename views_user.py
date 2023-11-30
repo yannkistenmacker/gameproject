@@ -1,8 +1,8 @@
-from jogoteca import app
+from jogoteca import app, db
 from flask import render_template, request, redirect, session, flash, url_for
 from models import Usuarios
-from helpers import FormularioUsuario
-from flask_bcrypt import check_password_hash
+from helpers import FormularioUsuario, FormularioCadastro
+from flask_bcrypt import check_password_hash, generate_password_hash
 
 
 # Criando rota para a pagina de login
@@ -10,7 +10,7 @@ from flask_bcrypt import check_password_hash
 def login():
     proxima = request.args.get('proxima')
     form = FormularioUsuario()
-    return render_template('login.html', proxima=proxima, form=form)  # Criando variavel proxima
+    return render_template('login.html', proxima=proxima, form=form)
 
 
 @app.route('/autenticar', methods=['POST', ])
@@ -22,7 +22,6 @@ def autenticar():
     if usuario and senha:
         session['usuario_logado'] = usuario.nickname
         flash(usuario.nickname + ' logado com sucesso!')
-        #proxima_pagina = request.form['proxima']
         return redirect('/')
     else:
         flash('Usuario nao logado!')
@@ -31,6 +30,37 @@ def autenticar():
 
 @app.route('/logout')
 def logout():
-    session['usuario_logado'] = None
-    flash('Logout efetuado com sucesso!')
-    return redirect(url_for('index'))
+    if session['usuario_logado'] is None:
+        flash('Usuario nao esta logado!')
+        return redirect(url_for('index'))
+    else:
+        session['usuario_logado'] = None
+        flash('Usuario deslogado com sucesso!')
+        return redirect(url_for('index'))
+
+
+@app.route('/cadastro', methods=['GET', 'POST'])
+def cadastro():
+    form = FormularioCadastro(request.form)
+    return render_template('cadastro.html', form=form)
+
+
+@app.route('/cadastrar', methods=['GET', 'POST'])
+def cadastrar():
+    form = FormularioCadastro()
+
+    nickname = form.nickname.data
+    nome = form.nome.data
+    senha = generate_password_hash(form.senha.data)
+
+
+    if form.validate_on_submit():
+        nickname = form.nickname.data
+        password = generate_password_hash(form.senha.data)
+
+        new_user = Usuarios(nickname=nickname, nome=nome, senha=senha)
+        db.session.add(new_user)
+        db.session.commit()
+        flash('Conta criada com sucesso')
+        return redirect('/')
+    return render_template('cadastro.html', form=form)
