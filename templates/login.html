@@ -5,8 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Jogoteca</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.css') }}">
+      <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+<style>
+        body {
+            /* Replace "path/to/your/background-image.jpg" with the actual path to your image file */
+            background-image: url('https://images.hdqwalls.com/download/gaming-controller-minimal-dark-5k-zp-2560x1440.jpg');
+            /* Set background size and other properties if needed */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            height: 100vh; /* This ensures the background covers the entire viewport height */
+            margin: 0; /* Remove default margin */
+            /* Add any other styles you need for your body */
+        }
+    </style>
   </head>
   <body>
+
     <div class="container">
 
 
@@ -33,11 +48,13 @@
                 {{ form.senha.label(class="form-label") }}
                 {{ form.senha(class="form-control") }}
             </div>
-            <div class="form-group">
+            <div class="form-group buttons">
                 {{ form.login(class="btn btn-primary") }}
+                <a class="btn btn-danger" href="{{ url_for('index') }}">Voltar</a>
+                <a class="btn btn-primary" href="{{ url_for('cadastro') }}">Cadastro</a>
             </div>
         </form>
-        <a class="btn btn-danger" href="{{ url_for('index') }}">Voltar</a>
+
     </div>
 </body>
 </html>
