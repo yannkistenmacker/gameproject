@@ -8,6 +8,9 @@ from flask_bcrypt import check_password_hash, generate_password_hash
 # Criando rota para a pagina de login
 @app.route('/login')
 def login():
+    if 'usuario_logado' in session and session['usuario_logado'] is not None:
+        flash('Voce ja esta logado como ' + session['usuario_logado'])
+        return redirect('/')
     proxima = request.args.get('proxima')
     form = FormularioUsuario()
     return render_template('login.html', proxima=proxima, form=form)
@@ -58,11 +61,7 @@ def cadastrar():
         flash('Usuario ja existe!')
         return redirect('cadastro')
 
-
     if form.validate_on_submit():
-        nickname = form.nickname.data
-        password = generate_password_hash(form.senha.data)
-
         new_user = Usuarios(nickname=nickname, nome=nome, senha=senha)
         db.session.add(new_user)
         db.session.commit()
