@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jogoteca
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jogoteca
+  template:
+    metadata:
+      labels:
+        app: jogoteca
+    spec:
+      containers:
+      - name: jogoteca
+        image: gameproject:latest1.0
+        ports:
+        - containerPort: 5000
+        env:
+        - name: DATABASE_URL
+          value: "mysql://root:admin@mysql:3306/jogoteca"
