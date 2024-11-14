@@ -17,5 +17,5 @@ spec:
               service:
                 name: jogoteca
                 port:
-                  number: 5000
+                  number: 80
 
