@@ -5,9 +5,9 @@ from flask_bcrypt import generate_password_hash
 print("Conectando...")
 try:
     conn = mysql.connector.connect(
-        host='127.0.0.1',
+        host='mysql.gameproject.svc.cluster.local',
         user='root',
-        password='root'
+        password='admin'
     )
 except mysql.connector.Error as err:
     if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
